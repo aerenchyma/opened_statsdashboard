@@ -1,4 +1,5 @@
 import sys
+import infofile
 from pylab import * #?
 import numpy as np 
 import matplotlib.pyplot as plt 
@@ -6,7 +7,7 @@ import matplotlib.dates as mdates
 #from PIL import Image, ImageEnhance
 #from webplotlib.chart_builders import create_chart_as_png_str
 from datetime import date, timedelta  #anything else?
-from GChartWrapper import *
+#from GChartWrapper import *
 from apiclient.errors import HttpError
 from oauth2client.client import AccessTokenRefreshError
 # what to import for google analytics client library??
@@ -20,10 +21,10 @@ CLIENT_SECRETS = 'client_secrets.json'
 # helpful msg if it's missing
 MISSING_CLIENT_SECRETS_MSG = '%s is missing' % CLIENT_SECRETS
 
-profileid= "8335957" 
-pgpath = "/education/lsa/physics140/fall2007"
+# profileid = infofile.profileid
+# pgpath = infofile.pgpath
 
-param_list = [profileid, pgpath]
+# param_list = [profileid, pgpath]
 
 # flow object to be used if we need to authenticate (?)
 FLOW = flow_from_clientsecrets(CLIENT_SECRETS, scope='https://www.googleapis.com/auth/analytics.readonly', message=MISSING_CLIENT_SECRETS_MSG)
@@ -68,13 +69,32 @@ def deal_with_results(res):
 	view_nums = [x[1] for x in res] # y axis
 	date_strs = [mdates.datestr2num(x[0]) for x in res] # hmm these are strings... # x axis
 	#date_strs = [mdates.strpdate2num(x[0],'%m-%d') for x in res]
-	#print type(date_strs[1])
-	plt.plot_date(x=date_strs, y=view_nums, fmt="r-")
-	plt.tick_params(labelsize=8)
-	plt.grid(True)
-	plt.title("Course Views over past %s days" % (len(date_strs)-1)) # should get title of course
-	#plt.autofmt_xdate()
-	savefig('test2.png')
+
+	# plt.plot_date(x=date_strs, y=view_nums, fmt="r-")
+	# plt.tick_params(labelsize=8)
+	# plt.grid(True)
+	# plt.title("Course Views over past %s days" % (len(date_strs)-1)) # should get title of course
+	# #plt.autofmt_xdate()
+	# savefig('test2.png')
+
+	# pl_n1 = [1,4,6,8]
+	# pl_n2 = [4,7,9,4]
+
+	fig, ax = plt.subplots(1)
+	ax.plot_date(date_strs, view_nums, fmt="g-")
+	fig.autofmt_xdate()
+
+	ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
+	#plt.title('fix label test')
+	total = sum(view_nums)
+	plt.title("%d total Course Views over past %s days" % (total, len(date_strs)-1)) # should get title of course
+
+	# fig, ab = plt.subplots(2)
+	# ab.plot(pl_n1,pl_n2,fmt="r-")
+	# plt.set_title('second sublplot maybe')
+
+	savefig('test3.png')
+
 
 
 #def main(argv):
@@ -86,7 +106,7 @@ def main(paramlist):
 		if profile_id:
 			#print profile_id
 			#query core reporting api
-			results = get_results(service, profile_id)
+			results = get_results(service, profile_id, paramlist)
 			#print_results(results) # hmm formatting, also where should these go
 			res = return_results(results)
 			#print res
@@ -99,7 +119,6 @@ def main(paramlist):
 	except:
 	 	print "Did you provide a profile id and a path as cli arguments? Try again."
 	else: # should run if it did not hit an except clause
-
 		deal_with_results(res)
 		# view_nums = [x[1] for x in res] # y axis
 		# date_strs = [mdates.datestr2num(x[0]) for x in res] # hmm these are strings... # x axis
@@ -111,12 +130,12 @@ def main(paramlist):
 		# savefig('test2.png')
 		#plt.show()
 
-def get_results(service, profile_id):
+def get_results(service, profile_id, paramlist, days_back=30):
 	# query = service.data().ga().get(ids='ga:%s' % profile_id, start_date='2010-03-01',end_date='2013-05-15',metrics='ga:pageviews',dimensions='ga:pagePath',filters='ga:pagePath==%s' % (sys.argv[2]))
-	start = proper_start_date(30)
+	start = proper_start_date(days_back) # change to change num of days back 
 	end = str(date.today())
 	# return query.execute()
-	return service.data().ga().get(ids='ga:%s' % (profile_id), start_date="%s" % start,end_date=end,metrics='ga:pageviews',dimensions='ga:date',sort='ga:date',filters='ga:pagePath==%s' % (param_list[1])).execute()#(sys.argv[2])).execute()
+	return service.data().ga().get(ids='ga:%s' % (profile_id), start_date=start,end_date=end,metrics='ga:pageviews',dimensions='ga:date',sort='ga:date',filters='ga:pagePath==%s' % (paramlist[1])).execute()#(sys.argv[2])).execute()
 
 
 def return_results(results):
