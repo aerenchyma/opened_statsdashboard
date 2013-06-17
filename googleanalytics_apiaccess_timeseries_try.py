@@ -23,12 +23,7 @@ class GoogleAnalyticsData(object):
 		# helpful msg if it's missing
 		self.MISSING_CLIENT_SECRETS_MSG = '%s is missing' % self.CLIENT_SECRETS
 		self.paramlist = [int(infofile.profileid),infofile.pgpath] # should this be here or in overall file??
-		# self.profileid = infofile.profileid
-		# self.pgpath = infofile.pgpath
-
-		# self.param_list = [profileid, pgpath]
-
-		# flow object to be used if we need to authenticate (?)
+		# flow object to be used if we need to authenticate (this remains a bit of a problem in some cases)
 		self.FLOW = flow_from_clientsecrets(self.CLIENT_SECRETS, scope='https://www.googleapis.com/auth/analytics.readonly', message=self.MISSING_CLIENT_SECRETS_MSG)
 
 		# a file to store the access token
@@ -48,10 +43,8 @@ class GoogleAnalyticsData(object):
 
 		# if existing creds are invalid and Run Auth flow
 		# run method will store any new creds
-
 		if credentials is None or credentials.invalid:
 			credentials = run(FLOW, storage)
-
 		return credentials
 
 	def initialize_service(self):
@@ -64,32 +57,22 @@ class GoogleAnalyticsData(object):
 	def deal_with_results(self,res):
 		"""Handles results gotten from API and formatted, plots them with matplotlib tools and saves plot img"""
 		view_nums = [x[1] for x in res] # y axis
-		date_strs = [mdates.datestr2num(x[0]) for x in res] # hmm these are strings... # x axis
-		#date_strs = [mdates.strpdate2num(x[0],'%m-%d') for x in res]
-
+		date_strs = [mdates.datestr2num(x[0]) for x in res]
 		fig, ax = plt.subplots(1)
 		ax.plot_date(date_strs, view_nums, fmt="g-")
 		fig.autofmt_xdate()
-
 		ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
-		#plt.title('fix label test')
 		total = sum(view_nums)
 		plt.title("%d total Course Views over past %s days" % (total, len(date_strs)-1)) # should get title of course
 		return fig
-		#savefig('test3.png')
 
 	def main(self):
 		self.service = self.initialize_service()
 		try:
-			self.profile_id = self.paramlist[0]#sys.argv[1]
-			#print "still in main"
+			self.profile_id = self.paramlist[0]
 			if self.profile_id:
-				#print profile_id
-				#query core reporting api
 				results = self.get_results(self.service, self.profile_id)
-				#print_results(results) # hmm formatting, also where should these go
 				res = self.return_results(results)
-				#print res
 		except TypeError, error:
 			print "There was an API error: %s " % (error)
 		except HttpError, error:
@@ -121,6 +104,7 @@ class GoogleAnalyticsData(object):
 
 	def print_results(self, results):
 		# print data nicely for the user (may also want to pipe to a file)
+		## this turned into a testing fxn -- TODO decide whether/what printing is needed and change to class __str__ method
 		if results:
 			print "Profile: %s" % results.get('profileInfo').get('profileName')
 			#print 'Total Pageviews: %s' % results.get('rows')[0][1]
@@ -128,7 +112,7 @@ class GoogleAnalyticsData(object):
 				print r
 		else:
 			print "No results found."
-		# for modularity -- poss look at Python print-results examples (e.g. by country or whatever) todo
+		# for modularity -- poss look @ Python print-results examples (e.g. by country or whatever) todo
 
 
 class GABulkDownloads_Views(GoogleAnalyticsData):
@@ -141,7 +125,6 @@ class GABulkDownloads_Views(GoogleAnalyticsData):
 		self.paramlist_second = [int(infofile.profileid), infofile.pgpath]
 		self.FLOW = flow_from_clientsecrets(self.CLIENT_SECRETS, scope='https://www.googleapis.com/auth/analytics.readonly', message=self.MISSING_CLIENT_SECRETS_MSG)
 		self.TOKEN_FILE_NAME = 'analytics.dat'
-		#print self.paramlist
 
 	def get_bulk_dl_link(self):
 		try:
@@ -202,7 +185,7 @@ class GABulkDownloads(GABulkDownloads_Views):
 
 
 if __name__ == '__main__':
-
+	## TESTING (pre unit tests)
 	#main(sys.argv)
 	#main(param_list)
 	#print "running the right file"
