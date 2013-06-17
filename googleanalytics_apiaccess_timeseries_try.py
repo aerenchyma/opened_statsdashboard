@@ -4,13 +4,9 @@ from pylab import * #?
 import numpy as np 
 import matplotlib.pyplot as plt 
 import matplotlib.dates as mdates
-#from PIL import Image, ImageEnhance
-#from webplotlib.chart_builders import create_chart_as_png_str
-from datetime import date, timedelta  #anything else?
-#from GChartWrapper import *
+from datetime import date, timedelta
 from apiclient.errors import HttpError
 from oauth2client.client import AccessTokenRefreshError
-# what to import for google analytics client library??
 import httplib2
 from apiclient.discovery import build
 from oauth2client.client import flow_from_clientsecrets
