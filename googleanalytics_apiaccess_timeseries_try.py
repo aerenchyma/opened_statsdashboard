@@ -188,7 +188,7 @@ class GABulkDownloads(GABulkDownloads_Views):
 		view_nums = [x[1] for x in res] # y axis
 		date_strs = [mdates.datestr2num(x[0]) for x in res] # x axis
 		fig, ax = plt.subplots(1)
-		ax.plot_date(date_strs, view_nums, fmt="r-")
+		ax.plot_date(date_strs, view_nums, fmt="b-")
 		fig.autofmt_xdate()
 		ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
 		total = sum(view_nums)

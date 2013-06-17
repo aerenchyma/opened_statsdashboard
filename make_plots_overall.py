@@ -6,21 +6,25 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 def main():
 	# course views over time (input eventually for days previous + path to investigate [latter for all, infofile])
-	nd = gatt.GoogleAnalyticsData()
-	nda = nd.main()
-	# course bulk downloads over time
-	nbdls = gatt.GABulkDownloads()
-	nbdlsa = nbdls.main()
-	# plot of course bulk downloads w/ course views
-	dlsv = gatt.GABulkDownloads_Views()
-	dlsva = dlsv.main()
+	#nd, nbdls, dlsv = 
+	objs_for_plots = gatt.GoogleAnalyticsData(), gatt.GABulkDownloads(), gatt.GABulkDownloads_Views()
+	plots = [x.main() for x in objs_for_plots]
+
+	# nda = nd.main()
+	# # course bulk downloads over time
+	# #nbdls = gatt.GABulkDownloads()
+	# nbdlsa = nbdls.main()
+	# # plot of course bulk downloads w/ course views
+	# #dlsv = gatt.GABulkDownloads_Views()
+	# dlsva = dlsv.main()
 
 	# next -- legend??
 
-	pp = PdfPages('summary.pdf')
-	pp.savefig(nda)
-	pp.savefig(nbdlsa)
-	pp.savefig(dlsva)
+	pp = PdfPages('summary2.pdf')
+	throwaway = [pp.savefig(x) for x in plots]
+	# pp.savefig(nda)
+	# pp.savefig(nbdlsa)
+	# pp.savefig(dlsva)
 	pp.close()
 
 def save_pdf():
