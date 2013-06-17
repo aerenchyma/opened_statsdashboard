@@ -128,7 +128,47 @@ class GoogleAnalyticsData(object):
 				print r
 		else:
 			print "No results found."
-		# need to figure out how to print more complicated results, modularly -- look at Python print-results examples (e.g. by country or whatever)
+		# for modularity -- poss look at Python print-results examples (e.g. by country or whatever) todo
+
+
+class GABulkDownloads(GoogleAnalyticsData):
+	def __init__(self, days_back=30):
+		self.days_back = days_back
+		self.CLIENT_SECRETS = 'client_secrets.json'
+		# helpful msg if it's missing
+		self.MISSING_CLIENT_SECRETS_MSG = '%s is missing' % self.CLIENT_SECRETS
+		self.paramlist = [int(infofile.profileid),self.get_bulk_dl_link()] # needs error checking TODO
+		self.FLOW = flow_from_clientsecrets(self.CLIENT_SECRETS, scope='https://www.googleapis.com/auth/analytics.readonly', message=self.MISSING_CLIENT_SECRETS_MSG)
+		self.TOKEN_FILE_NAME = 'analytics.dat'
+		#print self.paramlist
+
+	def get_bulk_dl_link(self):
+		try:
+			import mechanize
+			br = mechanize.Browser()
+		except:
+			print "Dependency (Mechanize) not installed. Try again."
+			return None
+		else:
+			response = br.open("http://open.umich.edu%s" % infofile.pgpath)
+			for link in br.links():
+				if "Download all" in link.text: # depends on current page lang/phrasing
+					response = br.follow_link(link)
+					url = response.geturl()
+			return url[len("http://open.umich.edu"):]
+
+	def deal_with_results(self, res):
+		"""Handles results gotten from API and formatted, plots them with matplotlib tools and saves plot img"""
+		view_nums = [x[1] for x in res] # y axis
+		date_strs = [mdates.datestr2num(x[0]) for x in res] # x axis
+		fig, ax = plt.subplots(1)
+		ax.plot_date(date_strs, view_nums, fmt="b-")
+		fig.autofmt_xdate()
+		ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
+		total = sum(view_nums)
+		plt.title("%d total Bulk Course Material Downloads over past %s days" % (total, len(date_strs)-1)) # should get title of course
+		savefig('test4.png')
+
 
 if __name__ == '__main__':
 
@@ -138,6 +178,10 @@ if __name__ == '__main__':
 	a = GoogleAnalyticsData()
 	#print a.paramlist[0]
 	a.main()
+
+	b = GABulkDownloads()
+	print b.paramlist
+	b.main()
 
 
 
