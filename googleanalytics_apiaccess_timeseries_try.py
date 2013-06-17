@@ -172,11 +172,12 @@ class GABulkDownloads_Views(GoogleAnalyticsData):
 		view_nums_orig = [x[1] for x in self.return_results(self.get_results_other(self.service,self.profile_id))] ## let's see
 		date_strs = [mdates.datestr2num(x[0]) for x in res] # x axis
 		fig, ax = plt.subplots(1)
-		ax.plot_date(date_strs, view_nums, fmt="b-")
-		ax.plot_date(date_strs, view_nums_orig, fmt="g-")
+		ax.plot_date(date_strs, view_nums, fmt="b-", label="Downloads")
+		ax.plot_date(date_strs, view_nums_orig, fmt="g-", label="Views")
 		fig.autofmt_xdate()
 		ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
-		total = sum(view_nums)
+		#total = sum(view_nums)
+		plt.legend(loc='upper left')
 		plt.title("Course Views vs Bulk Material Downloads over past %s days" % (len(date_strs)-1)) # should get title of course
 		#savefig('test4.png')
 		return fig
