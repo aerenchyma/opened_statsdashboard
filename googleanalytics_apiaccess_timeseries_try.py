@@ -75,8 +75,8 @@ class GoogleAnalyticsData(object):
 		#plt.title('fix label test')
 		total = sum(view_nums)
 		plt.title("%d total Course Views over past %s days" % (total, len(date_strs)-1)) # should get title of course
-
-		savefig('test3.png')
+		return fig
+		#savefig('test3.png')
 
 	def main(self):
 		self.service = self.initialize_service()
@@ -99,7 +99,7 @@ class GoogleAnalyticsData(object):
 		except:
 		 	print "Did you provide a profile id and a path as cli arguments? Try again."
 		else: # should run if it did not hit an except clause
-			self.deal_with_results(res)
+			return self.deal_with_results(res)
 
 	def get_results(self, service, profile_id):
 		# query = service.data().ga().get(ids='ga:%s' % profile_id, start_date='2010-03-01',end_date='2013-05-15',metrics='ga:pageviews',dimensions='ga:pagePath',filters='ga:pagePath==%s' % (sys.argv[2]))
@@ -178,7 +178,8 @@ class GABulkDownloads_Views(GoogleAnalyticsData):
 		ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
 		total = sum(view_nums)
 		plt.title("Course Views vs Bulk Material Downloads over past %s days" % (len(date_strs)-1)) # should get title of course
-		savefig('test4.png')
+		#savefig('test4.png')
+		return fig
 
 
 class GABulkDownloads(GABulkDownloads_Views):
@@ -192,7 +193,10 @@ class GABulkDownloads(GABulkDownloads_Views):
 		ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
 		total = sum(view_nums)
 		plt.title("%d total Bulk Course Material Downloads over past %s days" % (total, len(date_strs)-1)) # should get title of course
-		savefig('test5.png')
+		#savefig('test5.png')
+		#fig.show()
+		return fig
+
 
 
 
