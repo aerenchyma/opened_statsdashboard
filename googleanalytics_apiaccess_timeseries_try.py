@@ -67,16 +67,6 @@ class GoogleAnalyticsData(object):
 		date_strs = [mdates.datestr2num(x[0]) for x in res] # hmm these are strings... # x axis
 		#date_strs = [mdates.strpdate2num(x[0],'%m-%d') for x in res]
 
-		# plt.plot_date(x=date_strs, y=view_nums, fmt="r-")
-		# plt.tick_params(labelsize=8)
-		# plt.grid(True)
-		# plt.title("Course Views over past %s days" % (len(date_strs)-1)) # should get title of course
-		# #plt.autofmt_xdate()
-		# savefig('test2.png')
-
-		# pl_n1 = [1,4,6,8]
-		# pl_n2 = [4,7,9,4]
-
 		fig, ax = plt.subplots(1)
 		ax.plot_date(date_strs, view_nums, fmt="g-")
 		fig.autofmt_xdate()
@@ -86,21 +76,13 @@ class GoogleAnalyticsData(object):
 		total = sum(view_nums)
 		plt.title("%d total Course Views over past %s days" % (total, len(date_strs)-1)) # should get title of course
 
-		# fig, ab = plt.subplots(2)
-		# ab.plot(pl_n1,pl_n2,fmt="r-")
-		# plt.set_title('second sublplot maybe')
-
 		savefig('test3.png')
 
-
-
-	#def main(argv):
-	def main(self): # shouldn't need paramlift anymore b/c class constructor, right??
-		#proper_start_date()
+	def main(self):
 		service = self.initialize_service()
 		try:
 			self.profile_id = self.paramlist[0]#sys.argv[1]
-			print "still in main"
+			#print "still in main"
 			if self.profile_id:
 				#print profile_id
 				#query core reporting api
@@ -118,15 +100,6 @@ class GoogleAnalyticsData(object):
 		 	print "Did you provide a profile id and a path as cli arguments? Try again."
 		else: # should run if it did not hit an except clause
 			self.deal_with_results(res)
-			# view_nums = [x[1] for x in res] # y axis
-			# date_strs = [mdates.datestr2num(x[0]) for x in res] # hmm these are strings... # x axis
-			
-			#return view_nums, date_strs
-			# newplot = plt.plot_date(x=date_strs, y=view_nums, fmt="r-")
-			# plt.tick_params(labelsize=10)
-			# plt.grid(True)
-			# savefig('test2.png')
-			#plt.show()
 
 	def get_results(self, service, profile_id):
 		# query = service.data().ga().get(ids='ga:%s' % profile_id, start_date='2010-03-01',end_date='2013-05-15',metrics='ga:pageviews',dimensions='ga:pagePath',filters='ga:pagePath==%s' % (sys.argv[2]))
@@ -159,16 +132,11 @@ class GoogleAnalyticsData(object):
 
 if __name__ == '__main__':
 
-	# code to alter query modular-ly via html interface or something
-	#service = initialize_service()
-	#query = {'ids':'ga:%s' % profile_id, 'start_date':'2010-03-01','end_date':'2013-05-12','metrics'='ga:pageviews','dimensions':'ga:pagePath','filters':'ga:pagePath==%s' % (sys.argv[2]))
-	#query = service.data().ga().get(ids='ga:%s' % profile_id, start_date='2010-03-01',end_date='2013-05-15',metrics='ga:pageviews',dimensions='ga:pagePath',filters='ga:pagePath==%s' % (sys.argv[2]))
-
 	#main(sys.argv)
 	#main(param_list)
 	#print "running the right file"
 	a = GoogleAnalyticsData()
-	print a.paramlist[0]
+	#print a.paramlist[0]
 	a.main()
 
 
