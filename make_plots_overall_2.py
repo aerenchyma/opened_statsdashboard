@@ -15,19 +15,28 @@ VISITS_DEFN = """
 The phrase VISITS here refers to the number of times a page has been visited at all.
 This means that if you load a page on Tuesday, don't refresh it, close your computer,
 then open the computer on Wednesday with the page still open, and do not refresh it then
-either, this all counts as 1 view. It counts as 1, even if 
+either, this all counts as 1 view. It counts as 1, even if you thought of the individual 
+times you looked at the page as endeavors to reach different goals.
 """
 
 def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf"): # fname is the summary filename -- perhaps rename var TODO
 	pdf = FPDF()
 	#set_trace()
 	pdf.add_page()
-	pdf.set_font('Arial','',12) # adjust as appropriate
+	pdf.set_font('Times','',12) # adjust as appropriate
 	x,y = 40,10
-	pdf.cell(x,y,VISITS_DEFN) # well these long things need a lot of formatting help
+	visits_list = VISITS_DEFN.split("\n")
+	pageviews_list = PAGEVIEWS_DEFN.split("\n")
+	for l in visits_list:
+		pdf.cell(x,y,l)
+		pdf.ln()
+	for l in pageviews_list:
+		pdf.cell(x,y,l)
+		pdf.ln()
+	#pdf.cell(x,y,VISITS_DEFN) # well these long things need a lot of formatting help
 	# so, should put in checks/management for every string var -- length + formatting
 	pdf.ln()
-	pdf.cell(x,y,PAGEVIEWS_DEFN)
+	#pdf.cell(x,y,PAGEVIEWS_DEFN)
 	for k in info_dict:
 		if k != "Across time span":
 			pdf.cell(40,10, "%s: %d" % (k,info_dict[k]))
@@ -51,6 +60,10 @@ def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf"): # fnam
 
 
 def main():
+	# summary numbers and chart numbers are not the same -- diff timespans -- where is that determined 
+	## TODO sync!
+
+
 	# course views over time (input eventually for days previous + path to investigate [latter for all, infofile])
 	#nd, nbdls, dlsv = 
 	objs_for_plots = gatt.GoogleAnalyticsData(100), gatt.GABulkDownloads(100), gatt.GABulkDownloads_Views(100)
