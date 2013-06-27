@@ -80,6 +80,10 @@ def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf"): # fnam
 	pdf.add_page()
 	pdf.set_font('Arial','',12) # adjust as appropriate
 	x,y = 40,10
+	pdf.cell(x,y,VISITS_DEFN) # well these long things need a lot of formatting help for sure
+	# so, should put in checks for all of these in case anything is too long
+	pdf.ln()
+	pdf.cell(x,y,PAGEVIEWS_DEFN)
 	for k in info_dict:
 		if k != "Across time span":
 			pdf.cell(40,10, "%s: %d" % (k,info_dict[k]))
@@ -116,35 +120,7 @@ def main():
 	info = info_obj.main() # returns infodict
 	text_page_pdf(info, "oo_summary_4.pdf", "oo_summary_1.pdf") ## throwing error -- test with new name and we'll see
 
-	## create infosheet part of pdf
-	# pdf = FPDF()
-	# pdf.add_page()
-	# pdf.set_font('Arial','',12)
-	# pdf.cell(40,10, "TESTING NEW PAGE OVERWRITE") # here's where info goes on a page
-	# pdf.ln() # line break
-	# pdf.cell(40,10, "second test line!!") # here too
-	# pdf.output('newtry1.pdf', 'F')
-
-	# output = PdfFileWriter()
-
-	# fname = "oo_summary_1.pdf" # whatever file created name, this must be the same
-	# fh = file(fname, "rb")
-	# inp = PdfFileReader(fh)
-	# for i in range(inp.getNumPages()):
-	# 	output.addPage(inp.getPage(i))
-
-	# newfile = "newtry1.pdf" # again, la TODO -- this should always be the same as one created above after FPDF() constr
-	# fh_new = file(newfile, "rb")
-	# newf = PdfFileReader(fh_new)
-	# output.addPage(newf.getPage(0))
-
-	# outpStream = file("oo_summary_3.pdf", "wb") # and this should overwrite the summary, when generated -- testing actual overwrite now
-	# ## appears that overwrite of this file is the problem?? why? is it a hash issue? what expects a base10 int that changes w/ that?
-	# ## that works, though
-	# output.write(outpStream)
-	# outpStream.close()
-
-
+	# testing stuff
 	for k in info:
 		print k, info[k]
 
