@@ -120,7 +120,7 @@ def main():
 	info = info_obj.main() # returns infodict
 	text_page_pdf(info, "oo_summary_4.pdf", "oo_summary_1.pdf") ## throwing error -- test with new name and we'll see
 
-	# testing stuff
+	# testing stuff, view in console
 	for k in info:
 		print k, info[k]
 
