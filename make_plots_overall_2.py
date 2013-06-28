@@ -7,16 +7,15 @@ import os.path
 from pudb import set_trace
 
 PAGEVIEWS_DEFN = """
-The phrase PAGE VIEWS here refers to the number of times a page has been loaded. 
+The word (PAGE)VIEWS here refers to the number of times a page has been loaded. 
 If you refresh the page three times, that is 3 page views.
 """
 
 VISITS_DEFN = """
-The phrase VISITS here refers to the number of times a page has been visited at all.
+The word VISITS here refers to the number of times a page has been visited at all.
 This means that if you load a page on Tuesday, don't refresh it, close your computer,
-then open the computer on Wednesday with the page still open, and do not refresh it then
-either, this all counts as 1 view. It counts as 1, even if you thought of the individual 
-times you looked at the page as endeavors to reach different goals.
+then open the computer on Wednesday with the page still open and click around on it,
+this all counts as only one view.
 """
 
 def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf", tmpfile2="tmp_file_2.pdf"): # fname is the summary filename -- perhaps rename var TODO
@@ -27,28 +26,14 @@ def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf", tmpfile
 	defns_pdf.add_page()
 	pdf.set_font('Times','',12) # adjust as appropriate
 	defns_pdf.set_font('Times','',12)
-	x,y = 40,10
-	# visits_list = VISITS_DEFN.split("\n")
-	# pageviews_list = PAGEVIEWS_DEFN.split("\n")
-	# for l in visits_list:
-	# 	pdf.cell(x,y,l)
-	# 	pdf.ln()
-	# #pdf.ln()
-	# for l in pageviews_list:
-	# 	pdf.cell(x,y,l)
-	# 	pdf.ln()
-	#pdf.cell(x,y,VISITS_DEFN) # well these long things need a lot of formatting help
-	# so, should put in checks/management for every string var -- length + formatting
-
+	x,y = 30,10
 	#pdf.cell(x,y,PAGEVIEWS_DEFN)
 	pdf.cell(x,y, "Across time span of %s days:" % (info_dict["Across time span"]))
 	pdf.ln()
 	for k in info_dict:
 		if k != "Across time span":
-			pdf.cell(30,10, "%s: %d" % (k,info_dict[k]))
+			pdf.cell(x,y, "%s: %d" % (k,info_dict[k]))
 			pdf.ln()
-	#pdf.ln(.1)
-	# y += 10
 	pdf.output(tmpfile, 'F')
 
 ## second page should have title; TODO. all of course need better formatting
