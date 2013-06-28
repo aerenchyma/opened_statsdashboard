@@ -19,32 +19,50 @@ either, this all counts as 1 view. It counts as 1, even if you thought of the in
 times you looked at the page as endeavors to reach different goals.
 """
 
-def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf"): # fname is the summary filename -- perhaps rename var TODO
+def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf", tmpfile2="tmp_file_2.pdf"): # fname is the summary filename -- perhaps rename var TODO
 	pdf = FPDF()
+	defns_pdf = FPDF()
 	#set_trace()
 	pdf.add_page()
+	defns_pdf.add_page()
 	pdf.set_font('Times','',12) # adjust as appropriate
+	defns_pdf.set_font('Times','',12)
 	x,y = 40,10
+	# visits_list = VISITS_DEFN.split("\n")
+	# pageviews_list = PAGEVIEWS_DEFN.split("\n")
+	# for l in visits_list:
+	# 	pdf.cell(x,y,l)
+	# 	pdf.ln()
+	# #pdf.ln()
+	# for l in pageviews_list:
+	# 	pdf.cell(x,y,l)
+	# 	pdf.ln()
+	#pdf.cell(x,y,VISITS_DEFN) # well these long things need a lot of formatting help
+	# so, should put in checks/management for every string var -- length + formatting
+
+	#pdf.cell(x,y,PAGEVIEWS_DEFN)
+	pdf.cell(x,y, "Across time span of %s days:" % (info_dict["Across time span"]))
+	pdf.ln()
+	for k in info_dict:
+		if k != "Across time span":
+			pdf.cell(30,10, "%s: %d" % (k,info_dict[k]))
+			pdf.ln()
+	#pdf.ln(.1)
+	# y += 10
+	pdf.output(tmpfile, 'F')
+
+## second page should have title; TODO. all of course need better formatting
 	visits_list = VISITS_DEFN.split("\n")
 	pageviews_list = PAGEVIEWS_DEFN.split("\n")
 	for l in visits_list:
-		pdf.cell(x,y,l)
-		pdf.ln()
+		defns_pdf.cell(x,y,l)
+		defns_pdf.ln()
+	#pdf.ln()
 	for l in pageviews_list:
-		pdf.cell(x,y,l)
-		pdf.ln()
-	#pdf.cell(x,y,VISITS_DEFN) # well these long things need a lot of formatting help
-	# so, should put in checks/management for every string var -- length + formatting
-	pdf.ln()
-	#pdf.cell(x,y,PAGEVIEWS_DEFN)
-	for k in info_dict:
-		if k != "Across time span":
-			pdf.cell(40,10, "%s: %d" % (k,info_dict[k]))
-		pdf.ln()
-	pdf.ln()
-	# y += 10
-	pdf.cell(x,y, "across time span of %s days" % (info_dict["Across time span"]))
-	pdf.output(tmpfile, 'F')
+		defns_pdf.cell(x,y,l)
+		defns_pdf.ln()
+
+	defns_pdf.output(tmpfile2,'F')
 
 	output = PdfFileWriter()
 	fname = fname
@@ -52,7 +70,9 @@ def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf"): # fnam
 	for i in range(inp.getNumPages()):
 		output.addPage(inp.getPage(i))
 	newf = PdfFileReader(file(tmpfile, "rb"))
+	newf2 = PdfFileReader(file(tmpfile2, "rb"))
 	output.addPage(newf.getPage(0))
+	output.addPage(newf2.getPage(0))
 	outpStream = file(fname, "wb")
 	output.write(outpStream)
 	outpStream.close()
@@ -66,14 +86,15 @@ def main():
 
 	# course views over time (input eventually for days previous + path to investigate [latter for all, infofile])
 	#nd, nbdls, dlsv = 
-	objs_for_plots = gatt.GoogleAnalyticsData(100), gatt.GABulkDownloads(100), gatt.GABulkDownloads_Views(100)
+	days_back = 100
+	objs_for_plots = gatt.GoogleAnalyticsData(days_back), gatt.GABulkDownloads(days_back), gatt.GABulkDownloads_Views(days_back)
 	plots = [x.main() for x in objs_for_plots]
 	pp = PdfPages('oo_summary_1.pdf')
 	throwaway = [pp.savefig(x) for x in plots]
 	pp.close()
 
 	# adding page with info ## -- should this be abstracted more? TODO
-	info_obj = gatt.GA_Text_Info()
+	info_obj = gatt.GA_Text_Info(days_back)
 	info = info_obj.main() # returns infodict
 	text_page_pdf(info, "oo_summary_4.pdf", "oo_summary_1.pdf") # no error w/ non-overwrite orig file change
 
