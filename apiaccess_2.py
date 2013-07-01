@@ -227,6 +227,29 @@ class GA_Text_Info(GABulkDownloads_Views):
 			return None
 
 
+
+	## need maybe scraping-y fxn to find out what common term is in files to dl on course pg?
+	## OR some other sort of commonality e.g. creator?? are our naming conventions solid enough?
+	## (meh that's a terrible thing to depend on)
+	## OR list of all file links on course and check in lists -- expect performance worse but honestly... esp if monthly...
+
+	def indiv_dl_nums(self):
+		self.profile_id = self.paramlist[0]
+		self.service = self.initialize_service()
+		start = '2011-01-01'#self.proper_start_date()
+		end = str(date.today())
+		results = self.service.data().ga().get(ids='ga:%s' % (self.profile_id), start_date=start,end_date=end,metrics='ga:visitsWithEvent',dimensions='ga:eventLabel,ga:eventCategory,ga:eventAction',sort='-ga:visitsWithEvent').execute()#(sys.argv[2])).execute()
+		if results:
+			for x in results.get('rows'):
+				if "bgunderson" in x[0].encode('utf-8'):
+					print x
+			print type(results)
+			# print results
+		else:
+			print "No results found."
+			return None
+
+
 if __name__ == '__main__':
 	## TESTING (pre unit tests)
 	#main(sys.argv)

@@ -20,15 +20,15 @@ this all counts as only one view.
 
 #TODO automate proper filenames
 #TODO factor out functionality; this code is basically disgusting
-#TODO language fixes
+#TODO language (phrasing) fixes
 def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf", tmpfile2="tmp_file_2.pdf"): # fname is the summary filename -- perhaps rename var TODO
 	pdf = FPDF()
 	defns_pdf = FPDF()
 	#set_trace()
 	pdf.add_page()
 	defns_pdf.add_page()
-	pdf.set_font('Times','',12) # adjust as appropriate
-	defns_pdf.set_font('Times','',12)
+	pdf.set_font('Times','',12) # adjust as appropriate TODO
+	defns_pdf.set_font('Times','',12) # adjust as appropriate TODO
 	x,y = 30,10
 	#pdf.cell(x,y,PAGEVIEWS_DEFN)
 	pdf.cell(x,y, "Across time span of %s days:" % (info_dict["Across time span"]))
@@ -81,23 +81,25 @@ def main():
 
 	# course views over time (input eventually for days previous + path to investigate [latter for all, infofile])
 	#nd, nbdls, dlsv = 
-	days_back = 100
-	objs_for_plots = gatt.GoogleAnalyticsData(days_back), gatt.GABulkDownloads(days_back), gatt.GABulkDownloads_Views(days_back)
-	plots = [x.main() for x in objs_for_plots]
-	pp = PdfPages('oo_summary_1.pdf')
-	throwaway = [pp.savefig(x) for x in plots]
-	pp.close()
+	days_back = 300
+	# objs_for_plots = gatt.GoogleAnalyticsData(days_back), gatt.GABulkDownloads(days_back), gatt.GABulkDownloads_Views(days_back)
+	# plots = [x.main() for x in objs_for_plots]
+	# pp = PdfPages('oo_summary_1.pdf')
+	# throwaway = [pp.savefig(x) for x in plots]
+	# pp.close()
 
 	# adding page with info ## -- should this be abstracted more? TODO
 	info_obj = gatt.GA_Text_Info(days_back)
 	info_obj.get_more_info()
 	info = info_obj.main() # returns infodict
 	# TODO automate proper filenames
-	text_page_pdf(info, "oo_summary_4.pdf", "oo_summary_1.pdf") # no error w/ non-overwrite orig file change
+	#text_page_pdf(info, "oo_summary_4.pdf", "oo_summary_1.pdf") # no error w/ non-overwrite orig file change
 
 	# testing stuff, view in console
 	for k in info:
 		print k, info[k]
+
+	info_obj.indiv_dl_nums()
 
 # def save_pdf():
 # 	return None
