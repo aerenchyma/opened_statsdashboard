@@ -18,6 +18,9 @@ then open the computer on Wednesday with the page still open and click around on
 this all counts as only one view.
 """
 
+#TODO automate proper filenames
+#TODO factor out functionality; this code is basically disgusting
+#TODO language fixes
 def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf", tmpfile2="tmp_file_2.pdf"): # fname is the summary filename -- perhaps rename var TODO
 	pdf = FPDF()
 	defns_pdf = FPDF()
@@ -31,12 +34,19 @@ def text_page_pdf(info_dict,fname, origfile, tmpfile="tmp_file_num.pdf", tmpfile
 	pdf.cell(x,y, "Across time span of %s days:" % (info_dict["Across time span"]))
 	pdf.ln()
 	for k in info_dict:
-		if k != "Across time span":
+		if k != "Across time span" and k != "Top Nations":
 			pdf.cell(x,y, "%s: %d" % (k,info_dict[k]))
 			pdf.ln()
+	pdf.ln()
+	pdf.cell(x,y, "Top non-US countries visiting in the past %s days:" % (info_dict["Across time span"]))
+	pdf.ln()
+	for n in info_dict["Top Nations"][1:]:
+		pdf.cell(x,y, "* %s" % n)
+		pdf.ln()
+
 	pdf.output(tmpfile, 'F')
 
-## second page should have title; TODO. all of course need better formatting
+## defns etc page should have title; TODO. all of course need better formatting
 	visits_list = VISITS_DEFN.split("\n")
 	pageviews_list = PAGEVIEWS_DEFN.split("\n")
 	for l in visits_list:
@@ -80,7 +90,9 @@ def main():
 
 	# adding page with info ## -- should this be abstracted more? TODO
 	info_obj = gatt.GA_Text_Info(days_back)
+	info_obj.get_more_info()
 	info = info_obj.main() # returns infodict
+	# TODO automate proper filenames
 	text_page_pdf(info, "oo_summary_4.pdf", "oo_summary_1.pdf") # no error w/ non-overwrite orig file change
 
 	# testing stuff, view in console

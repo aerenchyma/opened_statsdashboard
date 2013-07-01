@@ -31,7 +31,7 @@ class GoogleAnalyticsData(object):
 
 
 	def proper_start_date(self):
-		"""Gets accurate date in YYYY-mm-dd format that is 30 days earlier than current day"""
+		"""Gets accurate date in YYYY-mm-dd format that is default 30 (or, however many specified) days earlier than current day"""
 		d = date.today() - timedelta(days=self.days_back)
 		return str(d)
 
@@ -183,16 +183,48 @@ class GABulkDownloads(GABulkDownloads_Views):
 		return fig
 
 class GA_Text_Info(GABulkDownloads_Views):
+	# depends on the main fxn in GABulkDownloads_Views -- this calls deal_with_results()
 	def deal_with_results(self, res):
 		"""Handles results gotten from API and formatted, returns data"""
 		view_nums = [x[1] for x in res] # y axis
 		view_nums_orig = [x[1] for x in self.return_results(self.get_results_other(self.service,self.profile_id))] ## let's see
 		total_dls = sum(view_nums)
 		total_views = sum(view_nums_orig)
+		top_countries = self.get_more_info()
 		# get more info with other queries? TODO
-		info_dict = {'Across time span':self.days_back, 'Total Page Views': total_views, 'Total Bulk Downloads': total_dls}
-		return info_dict
+		self.info_dict = {'Across time span':self.days_back, 'Total Page Views': total_views, 'Total Bulk Downloads': total_dls, 'Top Nations': top_countries}
+		return self.info_dict # making this a class attribute so I can use it below easily
 
+# if get_results itself changes, will have to change main() as well because return_results() depends on this being as is NOTE TODO
+	def get_results(self, service, profile_id):
+		# query = service.data().ga().get(ids='ga:%s' % profile_id, start_date='2010-03-01',end_date='2013-05-15',metrics='ga:pageviews',dimensions='ga:pagePath',filters='ga:pagePath==%s' % (sys.argv[2]))
+		start = self.proper_start_date() # change to change num of days back 
+		end = str(date.today())
+		# return query.execute()
+		return self.service.data().ga().get(ids='ga:%s' % (profile_id), start_date=start,end_date=end,metrics='ga:pageviews',dimensions='ga:date',sort='ga:date',filters='ga:pagePath==%s' % (self.paramlist[1])).execute()#(sys.argv[2])).execute()
+
+# but a different function that will get all the infos because it will take infodict?? that is a possibility, though ugly NTS
+	
+	def get_more_info(self, top_what=10): # don't need to pass in infodict b/c class attr now
+		# dimensions=ga:country
+		# metrics=ga:visits
+		# sort=-ga:visits
+		self.profile_id = self.paramlist[0]
+		self.service = self.initialize_service()
+		start = self.proper_start_date()
+		end = str(date.today())
+		results = self.service.data().ga().get(ids='ga:%s' % (self.profile_id), start_date=start,end_date=end,metrics='ga:pageviews',dimensions='ga:country',sort='-ga:pageviews',filters='ga:pagePath==%s' % (self.paramlist[1])).execute()#(sys.argv[2])).execute()
+		if results:
+			# for x in results.get('rows'):
+			# 	print x
+			top_nations = [x[0].encode('utf-8') for x in results.get('rows')][:top_what]
+			# for x in top_nations:
+			# 	print x
+			return top_nations
+
+		else:
+			print "No results found."
+			return None
 
 
 if __name__ == '__main__':
