@@ -25,12 +25,22 @@ def create_final_filename():
 	return "%s_%s.pdf" % (pg, today)
 
 #TODO factor out functionality; this code is pretty gross
-def text_page_pdf(info_dict,fname, origfile, tmpfile="incompletesummary.pdf", tmpfile2="almostfinishedsumm.pdf"): # fname is the summary filename -- perhaps rename var TODO
+def text_page_pdf(info_dict,fname, origfile, tmpfile="tf_1.pdf", tmpfile2="tf_2.pdf", tmpfile3="tf_3.pdf"): # fname is the summary filename -- perhaps rename var TODO
+	
+	#yrlong info object(s)
+	gat2 = gatt.GA_Text_Info(365)
+	info_gat2 = gat2.main()
+	# gatforever = gatt.GA_Text_Info(2920)
+	# info_gatf = gatforever.main()
+
 	pdf = FPDF()
+	sec_pdf = FPDF()
 	defns_pdf = FPDF()
 	#set_trace()
 	pdf.add_page()
 	defns_pdf.add_page()
+	sec_pdf.add_page()
+	sec_pdf.set_font('Times', '', 12) # adjust as appropriate TODO
 	pdf.set_font('Times','',12) # adjust as appropriate TODO
 	defns_pdf.set_font('Times','',12) # adjust as appropriate TODO
 	x,y = 30,10
@@ -43,17 +53,44 @@ def text_page_pdf(info_dict,fname, origfile, tmpfile="incompletesummary.pdf", tm
 			pdf.cell(x,y, "%s: %d" % (k,info_dict[k]))
 			pdf.ln()
 	pdf.ln()
-	pdf.cell(x,y, "Top non-US countries visiting this course:",0,1) # ALL time right now ## if change, add back to str: % (info_dict["Across time span"])
-	for n in info_dict["Top Nations"][1:]:
-		pdf.cell(x,y, "* %s" % n)
-		pdf.ln()
-	pdf.cell(x,y,"Top 10 individual files ever downloaded from this course, and how many times:",0,1) # ALL time right now
+	pdf.cell(x,y, "Over the past year:")
+	pdf.ln()
+	for k in info_gat2:
+		if k not in diff_keys:
+			pdf.cell(x,y, "%s: %d" % (k, info_gat2[k]))
+			pdf.ln()
+	pdf.ln() 
+
+	# TODO -- 'ever' -- past-days doesn't seem to work when over a yr, need new special query w/diff start
+	# pdf.cell(x,y,"Since course has been published on Open.Michigan:")
+	# pdf.ln()
+	# for k in info_gatf:
+	# 	if k not in diff_keys:
+	# 		pdf.cell(x,y,"%s: %d" % (k, info_gatf[k]))
+	# 		pdf.ln()
+
+
+# TODO must start new page here; information is being cut off.
+
+	if info_dict["Top Nations"][0] == 'United States':
+		sec_pdf.cell(x,y, "Top non-US countries visiting this course over past %s days:" % (info_dict["Across time span"]),0,1) # ALL time right now ## if change, add back to str: % (info_dict["Across time span"])
+		for n in info_dict["Top Nations"][1:]:
+			sec_pdf.cell(x,y, "* %s" % n)
+			sec_pdf.ln()
+	else:
+		sec_pdf.cell(x,y, "Top countries visiting this course:",0,1)
+		for n in info_dict["Top Nations"][:-1]:
+			sec_pdf.cell(x,y, "* %s" % n)
+			sec_pdf.ln()
+	sec_pdf.ln()
+	sec_pdf.cell(x,y,"Top 10 individual files ever downloaded from this course, and how many times:",0,1) # ALL time right now
 	#pdf.ln()
 	for r in info_dict["Top Resources"]:
-		pdf.cell(x,y, "* %s" % r)
-		pdf.ln()
+		sec_pdf.cell(x,y, "* %s" % r)
+		sec_pdf.ln()
 
 	pdf.output(tmpfile, 'F')
+	sec_pdf.output(tmpfile3,'F')
 
 ## defns etc page should have title; TODO. all of course need better formatting
 	visits_list = VISITS_DEFN.split("\n")
@@ -74,8 +111,10 @@ def text_page_pdf(info_dict,fname, origfile, tmpfile="incompletesummary.pdf", tm
 	for i in range(inp.getNumPages()):
 		output.addPage(inp.getPage(i))
 	newf = PdfFileReader(file(tmpfile, "rb"))
+	newf3 = PdfFileReader(file(tmpfile3,"rb"))
 	newf2 = PdfFileReader(file(tmpfile2, "rb"))
 	output.addPage(newf.getPage(0))
+	output.addPage(newf3.getPage(0))
 	output.addPage(newf2.getPage(0))
 	outpStream = file(fname, "wb")
 	output.write(outpStream)
@@ -83,11 +122,11 @@ def text_page_pdf(info_dict,fname, origfile, tmpfile="incompletesummary.pdf", tm
 
 def main():
 	# course views over time (input eventually for days previous + path to investigate [latter for all, infofile])
-	days_back = 60
+	days_back = 30
 	tmp_filename = "incompletesummary.pdf"
-	objs_for_plots = gatt.GoogleAnalyticsData(days_back), gatt.GABulkDownloads(days_back), gatt.GABulkDownloads_Views(days_back)
+	objs_for_plots = gatt.GoogleAnalyticsData(days_back), gatt.GABulkDownloads(days_back), gatt.GABulkDownloads_Views(days_back), gatt.GABulkDownloads_Views(365)
 	plots = [x.main() for x in objs_for_plots]
-	pp = PdfPages(tmp_filename)
+	pp = PdfPages(tmp_filename) # something around here isn't working -- generating pdf without plots. why? TODO
 	throwaway = [pp.savefig(x) for x in plots]
 	pp.close()
 
@@ -98,7 +137,7 @@ def main():
 	final_filename = create_final_filename()
 	# TODO automate proper filenames
 	#text_page_pdf(info, "oo_summary_4.pdf", "oo_summary_1.pdf") # no error w/ non-overwrite orig file change
-	text_page_pdf(info, final_filename,tmp_filename)
+	text_page_pdf(info, final_filename,tmp_filename) ## needed actually
 	# testing stuff, view in console
 	for k in info:
 		print k, info[k]

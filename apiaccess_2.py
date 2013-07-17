@@ -227,21 +227,21 @@ class GA_Text_Info(GABulkDownloads_Views):
 
 # but a different function that will get all the infos because it will take infodict?? that is a possibility, though ugly NTS
 	
-	# making timespan ALL time because it makes the most sense
+	# making timespan just the determined time -- more interesting if more variability
 	def get_more_info(self, top_what=10): # don't need to pass in infodict b/c class attr now
 		# dimensions=ga:country
 		# metrics=ga:visits
 		# sort=-ga:visits
 		self.profile_id = self.paramlist[0]
 		self.service = self.initialize_service()
-		#start = self.proper_start_date()
-		start = "2005-01-01"
+		start = self.proper_start_date()
+		#start = "2005-01-01"
 		end = str(date.today())
 		results = self.service.data().ga().get(ids='ga:%s' % (self.profile_id), start_date=start,end_date=end,metrics='ga:pageviews',dimensions='ga:country',sort='-ga:pageviews',filters='ga:pagePath==%s' % (self.paramlist[1])).execute()#(sys.argv[2])).execute()
 		if results:
 			# for x in results.get('rows'):
 			# 	print x
-			top_nations = [x[0].encode('utf-8') for x in results.get('rows') if "not set" not in x[0].encode('utf-8')][:top_what]
+			top_nations = [x[0].encode('utf-8') for x in results.get('rows') if "not set" not in x[0].encode('utf-8')][:top_what+1]
 			# for x in top_nations:
 			# 	print x
 			return top_nations
@@ -270,7 +270,7 @@ class GA_Text_Info(GABulkDownloads_Views):
 		return resources_results.get('rows')
 
 	def indiv_dl_nums(self): # pass in string that identifies all files of certain cat (hoping there is one) -- default Dr Gunderson atm
-	## TODO except that we have a problem because the file names are ureliable, can only rely on fact that they are in the course. should extract filenames from scrapingness
+	## TODO except that we have a problem because the file names are ureliable, can only rely on fact that they are in the course. should extract filenames  scrapingness
 		# self.profile_id = self.paramlist[0]
 		# self.service = self.initialize_service()
 		# start = '2011-01-01'#self.proper_start_date()
