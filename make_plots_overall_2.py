@@ -81,15 +81,8 @@ def text_page_pdf(info_dict,fname, origfile, tmpfile="incompletesummary.pdf", tm
 	output.write(outpStream)
 	outpStream.close()
 
-
-
 def main():
-	# summary numbers and chart numbers are not the same -- diff timespans -- where is that determined 
-	## TODO sync!
-
-
 	# course views over time (input eventually for days previous + path to investigate [latter for all, infofile])
-	#nd, nbdls, dlsv = 
 	days_back = 60
 	tmp_filename = "incompletesummary.pdf"
 	objs_for_plots = gatt.GoogleAnalyticsData(days_back), gatt.GABulkDownloads(days_back), gatt.GABulkDownloads_Views(days_back)
