@@ -1,5 +1,6 @@
 import sys
 import infofile
+import get_material_links
 from pylab import * #?
 import numpy as np 
 import matplotlib.pyplot as plt 
@@ -54,7 +55,7 @@ class GoogleAnalyticsData(object):
 		return build('analytics', 'v3', http=http)
 
 
-	def deal_with_results(self,res):
+	def deal_with_results(self, res):
 		"""Handles results gotten from API and formatted, plots them with matplotlib tools and saves plot img"""
 		view_nums = [x[1] for x in res] # y axis
 		date_strs = [mdates.datestr2num(x[0]) for x in res]
@@ -64,7 +65,7 @@ class GoogleAnalyticsData(object):
 		ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
 		total = sum(view_nums)
 		plt.title("%d total Course Views over past %s days" % (total, len(date_strs)-1)) # should get title of course
-		plt.text(3,3,"TESTING ADDING A STRING THING TO PLOT PDF")
+		#plt.text(3,3,"TESTING ADDING A STRING THING TO PLOT PDF")
 		return fig
 
 	def main(self):
@@ -81,7 +82,7 @@ class GoogleAnalyticsData(object):
 		except AccessTokenRefreshError:
 			print "The credentials have been revoked or expired, please re-run app to reauthorize."
 		except:
-		 	print "Did you provide a profile id and a path as cli arguments? Try again."
+		 	print "Did you provide a profile id and a path as cli arguments? (Do you need to?) Try again."
 		else: # should run if it did not hit an except clause
 			return self.deal_with_results(res)
 
@@ -184,16 +185,37 @@ class GABulkDownloads(GABulkDownloads_Views):
 
 class GA_Text_Info(GABulkDownloads_Views):
 	# depends on the main fxn in GABulkDownloads_Views -- this calls deal_with_results()
-	def deal_with_results(self, res):
+	def return_info(self, res):
 		"""Handles results gotten from API and formatted, returns data"""
-		view_nums = [x[1] for x in res] # y axis
-		view_nums_orig = [x[1] for x in self.return_results(self.get_results_other(self.service,self.profile_id))] ## let's see
-		total_dls = sum(view_nums)
-		total_views = sum(view_nums_orig)
-		top_countries = self.get_more_info()
-		# get more info with other queries? TODO
-		self.info_dict = {'Across time span':self.days_back, 'Total Page Views': total_views, 'Total Bulk Downloads': total_dls, 'Top Nations': top_countries}
-		return self.info_dict # making this a class attribute so I can use it below easily
+		self.service = self.initialize_service()
+		try:
+			self.profile_id = self.paramlist[0]
+			if self.profile_id:
+				results = self.get_results(self.service, self.profile_id)
+				res = self.return_results(results)
+		except:
+			print "Error occurred."
+		else:
+			view_nums = [x[1] for x in res] # y axis
+			view_nums_orig = [x[1] for x in self.return_results(self.get_results_other(self.service,self.profile_id))] ## let's see
+			total_dls = sum(view_nums)
+			total_views = sum(view_nums_orig)
+			top_countries = self.get_more_info()
+			top_resources = self.indiv_dl_nums()
+			# get more info with other queries? TODO
+			self.info_dict = {'Across time span':self.days_back, 'Total Page Views': total_views, 'Total Bulk Downloads': total_dls, 'Top Nations': top_countries, 'Top Resources':top_resources}
+			return self.info_dict # making this a class attribute so I can use it below easily
+
+## was this intended for plotting individual downloads over time? TODO
+	# def deal_with_results(self, res):
+	# 	## to be called in main -- do plots here basically
+	# 	ind_res = res #self.resources_results # holding it in class structure for easy access :/ ugly terribleness a bit
+	# 	files = [str(x[0].encode('utf-8')) for x in ind_res]
+	# 	nums = [int(x[3].encode('utf-8')) for x in ind_res]
+	# 	fig, ax = plt.subplots(1)
+	# 	ax.plot(files, nums) # this as line plot doesn't make sense, each is a different plotted line, so this should be bar or should get individual bits over time (and plot each by date obviously)
+	# 	plt.title("bad line chart of individual resources")
+	# 	return fig
 
 # if get_results itself changes, will have to change main() as well because return_results() depends on this being as is NOTE TODO
 	def get_results(self, service, profile_id):
@@ -205,19 +227,21 @@ class GA_Text_Info(GABulkDownloads_Views):
 
 # but a different function that will get all the infos because it will take infodict?? that is a possibility, though ugly NTS
 	
+	# making timespan ALL time because it makes the most sense
 	def get_more_info(self, top_what=10): # don't need to pass in infodict b/c class attr now
 		# dimensions=ga:country
 		# metrics=ga:visits
 		# sort=-ga:visits
 		self.profile_id = self.paramlist[0]
 		self.service = self.initialize_service()
-		start = self.proper_start_date()
+		#start = self.proper_start_date()
+		start = "2005-01-01"
 		end = str(date.today())
 		results = self.service.data().ga().get(ids='ga:%s' % (self.profile_id), start_date=start,end_date=end,metrics='ga:pageviews',dimensions='ga:country',sort='-ga:pageviews',filters='ga:pagePath==%s' % (self.paramlist[1])).execute()#(sys.argv[2])).execute()
 		if results:
 			# for x in results.get('rows'):
 			# 	print x
-			top_nations = [x[0].encode('utf-8') for x in results.get('rows')][:top_what]
+			top_nations = [x[0].encode('utf-8') for x in results.get('rows') if "not set" not in x[0].encode('utf-8')][:top_what]
 			# for x in top_nations:
 			# 	print x
 			return top_nations
@@ -233,22 +257,62 @@ class GA_Text_Info(GABulkDownloads_Views):
 	## (meh that's a terrible thing to depend on)
 	## OR list of all file links on course and check in lists -- expect performance worse but honestly... esp if monthly...
 
-	def indiv_dl_nums(self):
+	## TODO should know the DIFFERENCES between the popular individual materials and 'less so'
+
+## making timespan ALL time because makes the most sense
+	def indiv_dls_helper(self):
 		self.profile_id = self.paramlist[0]
 		self.service = self.initialize_service()
-		start = '2011-01-01'#self.proper_start_date()
+		#start = self.proper_start_date()
+		start = "2005-01-01"
 		end = str(date.today())
-		results = self.service.data().ga().get(ids='ga:%s' % (self.profile_id), start_date=start,end_date=end,metrics='ga:visitsWithEvent',dimensions='ga:eventLabel,ga:eventCategory,ga:eventAction',sort='-ga:visitsWithEvent').execute()#(sys.argv[2])).execute()
+		resources_results = self.service.data().ga().get(ids='ga:%s' % (self.profile_id), start_date=start,end_date=end,metrics='ga:visitsWithEvent',dimensions='ga:eventLabel,ga:eventCategory,ga:eventAction',sort='-ga:visitsWithEvent').execute()#(sys.argv[2])).execute()
+		return resources_results.get('rows')
+
+	def indiv_dl_nums(self): # pass in string that identifies all files of certain cat (hoping there is one) -- default Dr Gunderson atm
+	## TODO except that we have a problem because the file names are ureliable, can only rely on fact that they are in the course. should extract filenames from scrapingness
+		# self.profile_id = self.paramlist[0]
+		# self.service = self.initialize_service()
+		# start = '2011-01-01'#self.proper_start_date()
+		# end = str(date.today())
+		results = self.indiv_dls_helper()
 		if results:
-			for x in results.get('rows'):
-				if "bgunderson" in x[0].encode('utf-8'):
-					print x
-			print type(results)
+			# for x in results.get('rows'):
+			# 	if id_string in x[0].encode('utf-8'):
+			# 		print x
+			course_files = get_material_links.get_material_links()
+			sorted_resources = sorted([x for x in results if x[0][21:] in course_files if int(x[3]) != 0], key=lambda x: int(x[3].encode('utf-8')), reverse=True)
+			top_ten_resources = sorted_resources[:10]
+			# for x in top_ten_resources:
+			# 	print x[0][21:].encode('utf-8')
+			return ["%s -- %s" % (x[0][21:].encode('utf-8'), x[3].encode('utf-8')) for x in top_ten_resources]
+			#print type(results)
 			# print results
 		else:
 			print "No results found."
 			return None
 
+	# def plot_indiv_dls(self):
+	# 	ind_res = self.resources_results # holding it in class structure for easy access :/ ugly terribleness a bit
+	def main(self):
+		self.service = self.initialize_service()
+		try:
+			self.profile_id = self.paramlist[0]
+			if self.profile_id:
+				#results = self.get_results(self.service, self.profile_id)
+				#res = self.return_results(results)
+				res = self.indiv_dls_helper()
+		except TypeError, error:
+			print "There was an API error: %s " % (error)
+		except HttpError, error:
+			print "There was an API error: %s " % (error)
+		except AccessTokenRefreshError:
+			print "The credentials have been revoked or expired, please re-run app to reauthorize."
+		except:
+		 	print "Did you provide a profile id and a path as cli arguments? (Do you need to?) Try again."
+		else: # should run if it did not hit an except clause
+			return self.return_info(res) # this is not doing deal_with_results right now because that doesn't work as planned (and this is important)
+			# for the intended indiv dls fig, will need a different thing doing the catch and structural stuff that main() and all this does TODO
 
 if __name__ == '__main__':
 	## TESTING (pre unit tests)
